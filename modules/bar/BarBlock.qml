@@ -14,12 +14,11 @@ Rectangle {
   property bool dim: false
   property bool underline
   property var onClicked: function() {}
-  property int leftPadding: 4 
+  property int leftPadding: 4
   property int rightPadding: 4
 
   property string hoveredBgColor: "#181825"
   radius: 20
-
   // Background color
   color: {
     if (mouseArea.containsMouse)

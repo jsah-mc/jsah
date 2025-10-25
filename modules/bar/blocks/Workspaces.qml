@@ -15,8 +15,8 @@ RowLayout {
         Layout.preferredWidth: Math.max(50, Utils.HyprlandUtils.maxWorkspace * 25)
         Layout.preferredHeight: 23
         radius: 20
-        color: Theme.get.buttonBackgroundColor
-        border.color: Theme.get.buttonBorderColor
+        color: "#1e1e2e"
+        border.color: "#cba6f7"
         border.width: 1
         opacity: 0.95
 

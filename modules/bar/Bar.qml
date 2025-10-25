@@ -32,7 +32,7 @@ Scope {
                 barInstances.push(bar);
             }
 
-            color: "transparent"
+            color: 'transparent'
             height: 40 // slightly taller to allow spacing
             visible: true
 
@@ -46,7 +46,15 @@ Scope {
             Rectangle {
                 id: highlight
                 anchors.fill: parent
-                color: "transparent"
+                radius: 20
+                color: Theme.get.showBackground ? Theme.get.buttonBackgroundColor : 'transparent'
+                anchors {
+                    fill: parent
+                    topMargin: 3 // top spacing
+                    leftMargin: 10 // left spacing
+                    rightMargin: 10 // right spacing
+                    bottomMargin: 3 // bottom spacing
+                }
             }
 
             // Outer container to apply top/side spacing
@@ -54,9 +62,10 @@ Scope {
                 id: outerLayout
                 anchors {
                     fill: parent
-                    topMargin: 2// top spacing
+                    topMargin: 5 // top spacing
                     leftMargin: 10 // left spacing
                     rightMargin: 10 // right spacing
+                    bottomMargin: 5 // bottom spacing
                 }
                 spacing: 0
 
@@ -73,7 +82,7 @@ Scope {
                         Layout.alignment: Qt.AlignLeft
                         Layout.fillHeight: true
                         implicitWidth: leftContent.implicitWidth + 8
-                        implicitHeight: leftContent.implicitHeight
+                        implicitHeight: leftContent.implicitHeight + 8
 
                         RowLayout {
                             id: leftContent
@@ -84,28 +93,6 @@ Scope {
 
                             Blocks.Icon {}
                             Blocks.Workspaces {}
-                            Blocks.ActiveWorkspace {
-                                id: activeWorkspace
-                                anchors.centerIn: undefined
-        
-                                chopLength: {
-                                    var space = Math.floor(
-                                        bar.width - (rightBlocks.implicitWidth + leftBlocks.implicitWidth)
-                                    );
-                                    return space *1.2;
-                                }
-        
-                                text: {
-                                    var str = activeWindowTitle;
-                                    return str.length > chopLength ? str.slice(0, chopLength) + "..." : str;
-                                }
-        
-                                color: {
-                                    return Hyprland.focusedMonitor == Hyprland.monitorFor(screen)
-                                        ? "#FFFFFF"
-                                        : "#CCCCCC";
-                                }
-                            }
                         }
 
                         z: -1
@@ -146,7 +133,7 @@ Scope {
                         Layout.alignment: Qt.AlignRight
                         Layout.fillHeight: true
                         implicitWidth: rightContent.implicitWidth + 8
-                        implicitHeight: rightContent.implicitHeight
+                        implicitHeight: rightContent.implicitHeight + 20
 
                         RowLayout {
                             id: rightContent
