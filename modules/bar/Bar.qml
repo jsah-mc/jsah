@@ -150,10 +150,11 @@ Scope {
 
                         RowLayout {
                             id: rightContent
-                            spacing: 0
+                            spacing: 10
                             anchors.verticalCenter: parent.verticalCenter
-                            //anchors.leftMargin: 4
-                            //anchors.rightMargin: 4 
+                            anchors.leftMargin: 4
+                            anchors.rightMargin: 4 
+                            //`Blocks.Notifications {}
                             Blocks.SystemTray {}
                             Blocks.Memory {}
                             Blocks.Sound {}

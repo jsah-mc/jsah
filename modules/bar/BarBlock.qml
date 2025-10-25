@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-
+import 'root:/'
 Rectangle {
   id: root
   Layout.preferredWidth: contentContainer.implicitWidth + 10
@@ -14,16 +14,17 @@ Rectangle {
   property bool dim: false
   property bool underline
   property var onClicked: function() {}
-  property int leftPadding
-  property int rightPadding
+  property int leftPadding: 4 
+  property int rightPadding: 4
 
-  property string hoveredBgColor: "#666666"
+  property string hoveredBgColor: "#181825"
+  radius: 20
 
   // Background color
   color: {
     if (mouseArea.containsMouse)
       return hoveredBgColor;
-    return "transparent";
+    return Theme.get.buttonBackgroundColor;
   }
 
   states: [

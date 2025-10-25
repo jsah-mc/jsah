@@ -54,8 +54,8 @@ BarBlock {
 
         anchor {
             window: root.QsWindow?.window
-            edges: Edges.Bottom
-            gravity: Edges.Top
+            edges: Edges.Left
+            gravity: Edges.Left
         }
 
         MouseArea {
