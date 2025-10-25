@@ -29,7 +29,7 @@ BarBlock {
   
   Process {
     id: launcher
-    command: ["firefox"]  // Replace with your program
+    command: ["rofi", "-show", "drun"]  // Replace with your program
     // Or with arguments: command: ["rofi", "-show", "drun"]
   }
 }
