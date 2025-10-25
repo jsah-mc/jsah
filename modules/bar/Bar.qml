@@ -123,9 +123,13 @@ Scope {
                 // === RIGHT SIDE ===
                 RowLayout {
                     id: rightBlocks
-                    spacing: 0
+                    spacing: 10
                     Layout.alignment: Qt.AlignRight
-
+                    anchors {
+                        rightMargin: 4
+                        topMargin: 4
+                        bottomMargin: 4
+                    }
                     Rectangle {
                         id: rightBg
                         radius: 20

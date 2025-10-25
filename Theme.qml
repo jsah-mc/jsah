@@ -15,7 +15,7 @@ Singleton {
     property string buttonBackgroundColor: "#181825"  // Surface variant
     property bool buttonBorderShadow: false
     property bool onTop: true
-    property bool showBackground: true
+    property bool showBackground: false
     property string iconColor: "#90CAF9"  // Primary light
     property string iconPressedColor: "#64B5F6"  // Primary medium
     property string active: "#cba6f7"
