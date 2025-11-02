@@ -15,10 +15,12 @@ RowLayout {
         Layout.preferredWidth: Math.max(50, Utils.HyprlandUtils.maxWorkspace * 25)
         Layout.preferredHeight: 23
         radius: 20
-        color: "#1e1e2e"
-        border.color: "#cba6f7"
-        border.width: 1
+        color: "transparent"
         opacity: 0.95
+
+        // Margin around the bar
+        anchors.fill: parent
+        anchors.leftMargin: 7
 
         Row {
             anchors.centerIn: parent
@@ -36,7 +38,7 @@ RowLayout {
                     width: focused ? 32 : 10
                     height: 10
                     radius: height / 2
-
+                    
                     color: focused
                         ? Theme.get.active
                         : Theme.get.iconColor
@@ -45,6 +47,15 @@ RowLayout {
                     Behavior on width { NumberAnimation { duration: 150; easing.type: Easing.InOutQuad } }
                     Behavior on color { ColorAnimation { duration: 150; easing.type: Easing.InOutQuad } }
                     Behavior on opacity { NumberAnimation { duration: 150; easing.type: Easing.InOutQuad } }
+
+                    // Pac-Man icon for focused, dot for inactive
+                    Text {
+                        anchors.centerIn: parent
+                        text: focused ? "󰮯" : "•"
+                        font.pixelSize: focused ? 12 : 8
+                        color: focused ? Theme.get.barBgColor : "#ffffff"
+                        opacity: focused || occupied ? 1.0 : 0.7
+                    }
 
                     MouseArea {
                         anchors.fill: parent
@@ -62,7 +73,7 @@ RowLayout {
             }
         }
 
-        // Optional soft drop shadow if your theme allows
+        // Optional soft drop shadow
         layer.enabled: Theme.get.buttonBorderShadow
         layer.effect: DropShadow {
             radius: 6

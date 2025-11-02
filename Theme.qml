@@ -10,15 +10,14 @@ Singleton {
     id: main
 
     // Material Design 3 color palette
-    property string barBgColor: "#11111b"  // Surface dark
-    property string buttonBorderColor: "#181825"  // Surface variant
-    property string buttonBackgroundColor: "#181825"  // Surface variant
+    property string barBgColor: "#0C0E14"  // Surface dark
+    property string buttonBorderColor: "#16161e"  // Surface variant
+    property string buttonBackgroundColor: "transparent"  // Surface variant
     property bool buttonBorderShadow: false
     property bool onTop: true
-    property bool showBackground: false
-    property string iconColor: "#90CAF9"  // Primary light
-    property string iconPressedColor: "#64B5F6"  // Primary medium
-    property string active: "#cba6f7"
+    property bool showBackground: true
+    property string iconColor: "#7aa2f7"  // Primary light
+    property string iconPressedColor: "#3d59a1"  // Primary medium
+    property string active: "#e0af68"
   }
 }
-

@@ -32,6 +32,7 @@ Scope {
                 barInstances.push(bar);
             }
 
+            
             color: 'transparent'
             height: 40 // slightly taller to allow spacing
             visible: true
@@ -47,7 +48,7 @@ Scope {
                 id: highlight
                 anchors.fill: parent
                 radius: 20
-                color: Theme.get.showBackground ? Theme.get.buttonBackgroundColor : 'transparent'
+                color: Theme.get.showBackground ? Theme.get.barBgColor : 'transparent'
                 anchors {
                     fill: parent
                     topMargin: 3 // top spacing
@@ -78,7 +79,7 @@ Scope {
                     Rectangle {
                         id: leftBg
                         radius: 20
-                        color: Theme.get.barBgColor
+                        color: Theme.get.showBackground ? Theme.get.barBgColor : 'transparent'
                         Layout.alignment: Qt.AlignLeft
                         Layout.fillHeight: true
                         implicitWidth: leftContent.implicitWidth + 8
@@ -90,7 +91,7 @@ Scope {
                             anchors.verticalCenter: parent.verticalCenter
                             anchors.leftMargin: 4
                             anchors.rightMargin: 4
-
+                            
                             Blocks.Icon {}
                             Blocks.Workspaces {}
                         }
@@ -105,7 +106,7 @@ Scope {
                 // === CENTER ACTIVE WORKSPACE ===
                 Rectangle {
                     id: timeBg
-                    color: Theme.get.barBgColor
+                    color: Theme.get.showBackground ? Theme.get.barBgColor : 'transparent'
                     radius: 20
                     Layout.alignment: Qt.AlignVCenter
                     implicitWidth: 100
@@ -133,7 +134,7 @@ Scope {
                     Rectangle {
                         id: rightBg
                         radius: 20
-                        color: Theme.get.barBgColor
+                        color: Theme.get.showBackground ? Theme.get.barBgColor : 'transparent'
                         Layout.alignment: Qt.AlignRight
                         Layout.fillHeight: true
                         implicitWidth: rightContent.implicitWidth + 8

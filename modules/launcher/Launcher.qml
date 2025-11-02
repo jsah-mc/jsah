@@ -9,87 +9,81 @@ import "root:/"
 Scope {
     id: root
 
-    property var applications: []
     property int appsLoaded: 0
 
-    // Load apps immediately on startup
     Component.onCompleted: {
+        console.log("Starting app loader…")
         loadApps.running = true
     }
 
     // IPC Handler to toggle launcher
     IpcHandler {
         target: "launcher"
-        
+
         function toggle(): void {
             launcher.visible = !launcher.visible
         }
-        
+
         function show(): void {
             launcher.visible = true
         }
-        
+
         function hide(): void {
             launcher.visible = false
         }
     }
 
-    // Load applications - faster version with parallel processing
+    // Application list model
+    ListModel {
+        id: appModel
+    }
+
+    // Load applications from .desktop files
     Process {
         id: loadApps
-        command: ["sh", "-c", `
-            # Use awk for faster parsing - single pass through files
-            for file in /usr/share/applications/*.desktop ~/.local/share/applications/*.desktop 2>/dev/null; do
-                [ -f "$file" ] || continue
-                awk -F= '
-                    /^Name=/ && !name {name=$2}
-                    /^Exec=/ && !exec {exec=$2}
-                    /^Icon=/ && !icon {icon=$2}
-                    /^NoDisplay=true/ {skip=1}
-                    END {
-                        if (!skip && name && exec) {
-                            gsub(/%[uUfFick]/, "", exec)
-                            gsub(/^[ \\t]+|[ \\t]+$/, "", exec)
-                            print name "|" exec "|" icon
-                        }
-                    }
-                ' "$file"
-            done | head -150
-        `]
+        command: ["/usr/bin/env", "bash", "-c",
+            "for dir in /usr/share/applications /usr/local/share/applications ~/.local/share/applications /var/lib/flatpak/exports/share/applications; do " +
+            "for file in $dir/*.desktop 2>/dev/null; do " +
+            "[ -f \"$file\" ] || continue; " +
+            "awk -F= '/^Name=/ && !name {name=$2} " +
+            "/^Exec=/ && !exec {exec=$2} " +
+            "/^Icon=/ && !icon {icon=$2} " +
+            "/^NoDisplay=true/ {skip=1} " +
+            "END {if (!skip && name && exec) {gsub(/%[uUfFick]/, \"\", exec); print name \"|\" exec \"|\" icon}}' \"$file\"; " +
+            "done; done | head -200"
+        ]
         running: false
 
         stdout: SplitParser {
             splitMarker: "\n"
             onRead: data => {
-                if (data.trim().length === 0) return
-                
-                const parts = data.split('|')
+                const line = data.trim()
+                if (line.length === 0) return
+                const parts = line.split("|")
                 if (parts.length >= 2) {
-                    applications.push({
+                    appModel.append({
                         name: parts[0],
                         exec: parts[1],
                         icon: parts[2] || ""
                     })
-                    appsLoaded++
                 }
             }
         }
 
         onExited: {
-            console.log(`Loaded ${appsLoaded} applications`)
-            applications = applications
+            console.log(`Loaded ${appModel.count} applications`)
         }
     }
 
     PanelWindow {
         id: launcher
         visible: false
-        
+
         width: 600
         height: 500
-        
+
         color: "transparent"
-        
+
         anchors {
             top: false
             bottom: false
@@ -103,10 +97,16 @@ Scope {
         property string searchText: ""
 
         property var filteredApps: {
-            if (searchText.length === 0) return applications
-            return applications.filter(app => 
-                app.name.toLowerCase().includes(searchText)
-            )
+            if (searchText.length === 0)
+                return appModel
+            const lower = searchText.toLowerCase()
+            const result = []
+            for (let i = 0; i < appModel.count; i++) {
+                const app = appModel.get(i)
+                if (app.name && app.name.toLowerCase().includes(lower))
+                    result.push(app)
+            }
+            return result
         }
 
         function launchApp(exec) {
@@ -135,75 +135,13 @@ Scope {
             height: parent.height - 40
             spacing: 15
 
-            // Search box - separate rounded rectangle
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 60
-                color: Theme.get.barBgColor
-                radius: 20
-                border.color: Theme.get.active
-                border.width: 2
 
-                RowLayout {
-                    anchors.fill: parent
-                    anchors.margins: 15
-                    spacing: 10
-
-                    Text {
-                        text: "🔍"
-                        color: "#888888"
-                        font.pixelSize: 16
-                    }
-
-                    TextInput {
-                        id: searchInput
-                        Layout.fillWidth: true
-                        color: "white"
-                        font.pixelSize: 16
-                        verticalAlignment: TextInput.AlignVCenter
-                        selectByMouse: true
-
-                        onTextChanged: {
-                            searchText = text.toLowerCase()
-                            appList.currentIndex = 0
-                        }
-
-                        Keys.onPressed: event => {
-                            if (event.key === Qt.Key_Escape) {
-                                launcher.visible = false
-                                event.accepted = true
-                            } else if (event.key === Qt.Key_Down) {
-                                appList.currentIndex = Math.min(appList.currentIndex + 1, appList.count - 1)
-                                event.accepted = true
-                            } else if (event.key === Qt.Key_Up) {
-                                appList.currentIndex = Math.max(appList.currentIndex - 1, 0)
-                                event.accepted = true
-                            } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                                if (appList.currentIndex >= 0 && appList.currentIndex < filteredApps.length) {
-                                    launchApp(filteredApps[appList.currentIndex].exec)
-                                }
-                                event.accepted = true
-                            }
-                        }
-
-                        Text {
-                            visible: parent.text.length === 0
-                            text: "Type to search..."
-                            color: "#888888"
-                            font: parent.font
-                            anchors.fill: parent
-                            verticalAlignment: Text.AlignVCenter
-                        }
-                    }
-                }
-            }
-
-            // Application list - separate rounded rectangle
+            // Application list
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 color: Theme.get.barBgColor
-                radius: 20
+                radius: 40
                 border.color: Theme.get.active
                 border.width: 2
 
@@ -215,14 +153,14 @@ Scope {
 
                     ListView {
                         id: appList
-                        model: filteredApps
+                        model: launcher.filteredApps
                         spacing: 5
                         currentIndex: 0
 
                         Text {
                             visible: appList.count === 0
                             anchors.centerIn: parent
-                            text: applications.length === 0 ? "Loading applications..." : "No applications found"
+                            text: appModel.count === 0 ? "Loading applications..." : "No applications found"
                             color: "#888888"
                             font.pixelSize: 14
                         }
@@ -233,7 +171,8 @@ Scope {
 
                             width: appList.width
                             height: 50
-                            color: appList.currentIndex === index ? Theme.get.active : (appMouseArea.containsMouse ? Theme.get.buttonBackgroundColor : "transparent")
+                            color: appList.currentIndex === index ? Theme.get.active :
+                                   (appMouseArea.containsMouse ? Theme.get.buttonBackgroundColor : "transparent")
                             radius: 20
 
                             Behavior on color {
@@ -245,9 +184,21 @@ Scope {
                                 anchors.margins: 10
                                 spacing: 15
 
+                                // App icon or letter
+                                Image {
+                                    source: modelData.icon && modelData.icon.length > 0
+                                        ? (modelData.icon.startsWith("/") ? `file://${modelData.icon}` : `image://xdgicon/${modelData.icon}`)
+                                        : ""
+                                    width: 32
+                                    height: 32
+                                    fillMode: Image.PreserveAspectFit
+                                    visible: modelData.icon && modelData.icon.length > 0
+                                }
+
                                 Rectangle {
-                                    Layout.preferredWidth: 32
-                                    Layout.preferredHeight: 32
+                                    visible: !modelData.icon || modelData.icon.length === 0
+                                    width: 32
+                                    height: 32
                                     color: "#313244"
                                     radius: 16
 
@@ -271,15 +222,6 @@ Scope {
                                         font.pixelSize: 14
                                         elide: Text.ElideRight
                                     }
-
-                                    Text {
-                                        Layout.fillWidth: true
-                                        text: modelData.exec
-                                        color: "#888888"
-                                        font.pixelSize: 10
-                                        elide: Text.ElideRight
-                                        visible: false  // Hide exec by default
-                                    }
                                 }
                             }
 
@@ -291,7 +233,7 @@ Scope {
 
                                 onClicked: {
                                     appList.currentIndex = index
-                                    launchApp(modelData.exec)
+                                    launcher.launchApp(modelData.exec)
                                 }
 
                                 onEntered: appList.currentIndex = index
@@ -300,18 +242,80 @@ Scope {
                     }
                 }
 
-                // Footer with count
+                // Footer
                 Text {
                     anchors.bottom: parent.bottom
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.bottomMargin: 15
-                    text: `${filteredApps.length} application${filteredApps.length !== 1 ? 's' : ''}`
+                    text: `${launcher.filteredApps.length || appModel.count} application${(launcher.filteredApps.length || appModel.count) !== 1 ? 's' : ''}`
                     color: "#888888"
                     font.pixelSize: 12
                 }
             }
         }
 
+            // Search box
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 60
+                color: Theme.get.barBgColor
+                radius: 40
+                border.color: Theme.get.active
+                border.width: 2
+
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.margins: 15
+                    spacing: 10
+
+                    Text {
+                        text: "🔍"
+                        color: "#888888"
+                        font.pixelSize: 16
+                    }
+
+                    TextInput {
+                        id: searchInput
+                        Layout.fillWidth: true
+                        color: "white"
+                        font.pixelSize: 16
+                        verticalAlignment: TextInput.AlignVCenter
+                        selectByMouse: true
+
+                        onTextChanged: {
+                            launcher.searchText = text.toLowerCase()
+                            appList.currentIndex = 0
+                        }
+
+                        Keys.onPressed: event => {
+                            if (event.key === Qt.Key_Escape) {
+                                launcher.visible = false
+                                event.accepted = true
+                            } else if (event.key === Qt.Key_Down) {
+                                appList.currentIndex = Math.min(appList.currentIndex + 1, appList.count - 1)
+                                event.accepted = true
+                            } else if (event.key === Qt.Key_Up) {
+                                appList.currentIndex = Math.max(appList.currentIndex - 1, 0)
+                                event.accepted = true
+                            } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                                if (appList.currentIndex >= 0 && appList.currentIndex < launcher.filteredApps.length) {
+                                    launcher.launchApp(launcher.filteredApps[appList.currentIndex].exec)
+                                }
+                                event.accepted = true
+                            }
+                        }
+
+                        Text {
+                            visible: parent.text.length === 0
+                            text: "Type to search..."
+                            color: "#888888"
+                            font: parent.font
+                            anchors.fill: parent
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                    }
+                }
+            }
         // Click outside to close
         MouseArea {
             anchors.fill: parent

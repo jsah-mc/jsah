@@ -9,7 +9,7 @@ import Qt5Compat.GraphicalEffects
 Text {
   property string mainFont: "FiraCode"
   property string symbolFont: "Symbols Nerd Font Mono"
-  property int pointSize: 12
+  property int pointSize: 11
   property int symbolSize: pointSize * 1.4
   property string symbolText
   property bool dim

@@ -5,7 +5,7 @@ import 'root:/'
 Rectangle {
   id: root
   Layout.preferredWidth: contentContainer.implicitWidth + 10
-  Layout.preferredHeight: 30
+  Layout.preferredHeight: 25
 
   property Item content
   property Item mouseArea: mouseArea
@@ -16,13 +16,13 @@ Rectangle {
   property var onClicked: function() {}
   property int leftPadding: 4
   property int rightPadding: 4
-
-  property string hoveredBgColor: "#181825"
+  property string hoveredBgColor: transparent
   radius: 20
+
+  // border.color: Theme.get.active
+  // border.width: 1
   // Background color
   color: {
-    if (mouseArea.containsMouse)
-      return hoveredBgColor;
     return Theme.get.buttonBackgroundColor;
   }
 
